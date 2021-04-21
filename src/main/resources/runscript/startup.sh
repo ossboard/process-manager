@@ -8,11 +8,43 @@ then
 fi
 
 export JAVA=java
-export T_NAME=nara-migration-2021.1.jar
-export T_USAGE="Usage: $0 {test | mig | log}"
+export T_NAME=process-manager-2021.1.jar
+export T_USAGE="Usage: $0 {start | stop | restart | status | log}"
 
-fn_run() {
-  ${JAVA} -jar ${T_NAME} $1
+fn_pid() {
+  echo `ps auxwww | grep "${T_NAME}" | grep -v grep | tr -s " "|cut -d" " -f2`
+}
+
+fn_start() {
+  export pid=$(fn_pid)
+  if [ ! -n "${pid}" ]
+  then
+    echo "Starting ${T_NAME}"
+    nohup ${JAVA} -jar ${T_NAME} 1> /dev/null 2>&1 &
+  fi
+  fn_status
+}
+
+fn_stop() {
+  export pid=$(fn_pid)
+  if [ -n "${pid}" ]
+  then
+    echo "Stoping ${T_NAME}"
+    for pid_item in ${pid}
+    do
+      kill -9 ${pid_item}
+    done
+  fi
+  fn_status
+}
+
+fn_status() {
+  export pid=$(fn_pid)
+  if [ -n "${pid}" ]
+    then echo "${T_NAME} is running with pid: ${pid}"
+  else
+    echo "${T_NAME} is not running"
+  fi
 }
 
 fn_log() {
@@ -20,8 +52,13 @@ fn_log() {
 }
 
 case $1 in
-  test) fn_run ;;
-  mig) fn_run ;;
+  start) fn_start ;;
+  stop) fn_stop ;;
+  restart)
+      fn_stop
+      sleep 3
+      fn_start ;;
+  status) fn_status ;;
   log) fn_log ;;
   *) echo ${T_USAGE} ;;
 esac
