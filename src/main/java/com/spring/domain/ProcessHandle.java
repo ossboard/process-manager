@@ -1,8 +1,8 @@
-package com.github.spring.domain;
+package com.spring.domain;
 
-import com.github.spring.core.ICommandExecuteHelper;
-import com.github.spring.core.ShellCommandExecuteHelper;
-import com.github.spring.core.WindowsCommandExecuteHelper;
+import com.spring.core.ICommandExecuteHelper;
+import com.spring.core.ShellCommandExecuteHelper;
+import com.spring.core.WindowsCommandExecuteHelper;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -45,21 +45,18 @@ public class ProcessHandle {
 
     public Boolean start() {
         processStateMap.clear();
-
         List<Integer> procList = executeHelper.getPidList(command);
         Integer addCount = count - procList.size();
-
         for (Integer pid : procList) {
             processStateMap.put(pid, ProcessState.Running);
         }
-
         for (int i = 0; i < addCount; i++) {
+            System.out.println("> " + command);
             Integer pid = executeHelper.exec(command);
             if (pid > 0) {
                 processStateMap.put(pid, ProcessState.Running);
             }
         }
-
         return processStateMap.size() == count;
     }
 
@@ -161,10 +158,9 @@ public class ProcessHandle {
 
 
         if (autoRestart && fatalProcList.size() > 0) {
-            for (Integer pid :
-                    fatalProcList) {
+            for (Integer pid : fatalProcList) {
+                System.out.println("> " + command);
                 Integer newPid = executeHelper.exec(command);
-
                 if (newPid > 0) {
                     processStateMap.remove(pid);
                     processStateMap.put(newPid, ProcessState.Running);

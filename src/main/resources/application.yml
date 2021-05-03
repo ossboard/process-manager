@@ -1,4 +1,6 @@
 
+server:
+  title: 'Porcess-Manager'
 logging:
   file:
     path: ../logs

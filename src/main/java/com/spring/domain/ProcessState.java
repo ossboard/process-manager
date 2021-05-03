@@ -1,4 +1,4 @@
-package com.github.spring.domain;
+package com.spring.domain;
 
 public enum ProcessState {
     Ready,

@@ -1,4 +1,4 @@
-package com.github.spring;
+package com.spring;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +20,7 @@ import java.util.List;
 @EnableScheduling
 public class Application implements CommandLineRunner {
 
-    private static String mode;
+    private static String rootPath = "./build/libs/";
 
     public static void main(String[] args) throws Exception {
 
@@ -30,7 +30,7 @@ public class Application implements CommandLineRunner {
         }
         File file = appInit();
         List<String> list = new ArrayList(Arrays.asList(args));
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             String configSet = String.format("--spring.config.location=file:%s", file.getAbsolutePath());
             boolean found = false;
             for (String s : list) {
@@ -46,6 +46,7 @@ public class Application implements CommandLineRunner {
         }
         args = list.toArray(new String[0]);
 
+        System.setProperty("rootPath", rootPath);
         SpringApplication app = new SpringApplication(Application.class);
         app.run(args);
     }
@@ -54,9 +55,13 @@ public class Application implements CommandLineRunner {
         String OS = System.getProperty("os.name").toLowerCase();
         String startup = ((OS.indexOf("win") >= 0)) ? "startup.bat" : "startup.sh";
         String commandPath = System.getProperty("sun.java.command");
-        commandPath = StringUtils.substringBefore(commandPath, " ");
+        commandPath = StringUtils.substringBefore(commandPath," ");
+        if(StringUtils.equals(commandPath,"com.spring.Application")) {
+            return null;
+        }
         String path = FilenameUtils.getPath(commandPath);
-        path = (StringUtils.isEmpty(path)) ? "." : path;
+        path = (StringUtils.isEmpty(path)) ? "./" : path;
+        rootPath = path;
         String filePath1 = FilenameUtils.normalize(path + "/application.yml");
         String filePath2 = FilenameUtils.normalize(path + "/config.ini");
         String filePath3 = FilenameUtils.normalize(path + "/logs");
@@ -72,17 +77,14 @@ public class Application implements CommandLineRunner {
             OutputStream out = new FileOutputStream(file1);
             FileCopyUtils.copy(in, out);
         }
-
         if (!file2.exists()) {
             InputStream in = Application.class.getResourceAsStream("/config.ini");
             OutputStream out = new FileOutputStream(file2);
             FileCopyUtils.copy(in, out);
         }
-
         if (!file3.isDirectory()) {
             file3.mkdirs();
         }
-
         if (!file4.exists()) {
             InputStream in = Application.class.getResourceAsStream("/runscript/" + startup);
             OutputStream out = new FileOutputStream(file4);

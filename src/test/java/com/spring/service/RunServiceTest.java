@@ -1,4 +1,4 @@
-package com.github.spring.service;
+package com.spring.service;
 
 import org.ini4j.Ini;
 import org.ini4j.Wini;

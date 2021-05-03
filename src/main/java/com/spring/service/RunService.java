@@ -1,6 +1,7 @@
-package com.github.spring.service;
+package com.spring.service;
 
-import com.github.spring.domain.ProcessHandle;
+import com.spring.domain.ProcessHandle;
+import org.apache.commons.io.FilenameUtils;
 import org.ini4j.Ini;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +22,13 @@ public class RunService {
     private static Logger log = LoggerFactory.getLogger(RunService.class);
 
     private List<ProcessHandle> processHandleList;
-
     private String INI_FILE = "config.ini";
-
+    private String rootPath = System.getProperty("rootPath");
     public RunService() throws Exception {
 
         processHandleList = new ArrayList<>();
-        File file = new File(INI_FILE);
+        String filePath = FilenameUtils.normalize(rootPath + INI_FILE);
+        File file = new File(filePath);
         if(file.exists() && file.isFile()) {
             Ini ini = new Ini(new FileReader(file));
             for (String sectionName : ini.keySet()) {

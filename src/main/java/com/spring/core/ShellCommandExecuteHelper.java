@@ -1,6 +1,4 @@
-package com.github.spring.core;
-
-import com.github.spring.domain.ProcessHandle;
+package com.spring.core;
 
 import java.io.*;
 import java.util.ArrayList;

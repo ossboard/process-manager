@@ -12,7 +12,8 @@
 
 ### 빌드
 ```
-$ gradle build -x test
+$ ./gradlew build -x test
+$ ./gradlew bootRun -x test --args='-Dspring.profiles.active=developer'
 ``` 
 
 ### 실행
