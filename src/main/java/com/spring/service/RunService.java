@@ -24,8 +24,8 @@ public class RunService {
     private List<ProcessHandle> processHandleList;
     private String INI_FILE = "config.ini";
     private String rootPath = System.getProperty("rootPath");
-    public RunService() throws Exception {
 
+    public RunService() throws Exception {
         processHandleList = new ArrayList<>();
         String filePath = FilenameUtils.normalize(rootPath + INI_FILE);
         File file = new File(filePath);
@@ -36,11 +36,19 @@ public class RunService {
                 String directory = ini.get(sectionName, "directory", String.class);
                 String stdout_logfile = ini.get(sectionName, "stdout_logfile", String.class);
                 String stderr_logfile = ini.get(sectionName, "stderr_logfile", String.class);
-                boolean autostart = ini.get(sectionName, "autostart", Boolean.class);
-                int numprocs = ini.get(sectionName, "numprocs", Integer.class);
+                Integer stdout_logfile_maxbytes = ini.get(sectionName, "stdout_logfile_maxbytes", Integer.class);
+                Integer stderr_logfile_maxbytes = ini.get(sectionName, "stderr_logfile_maxbytes", Integer.class);
+                Integer stdout_logfile_backups = ini.get(sectionName, "stdout_logfile_backups", Integer.class);
+                Integer stderr_logfile_backups = ini.get(sectionName, "stderr_logfile_backups", Integer.class);
+                Boolean autostart = ini.get(sectionName, "autostart", Boolean.class);
+                Boolean autorestart = ini.get(sectionName, "autorestart", Boolean.class);
+                Integer numprocs = ini.get(sectionName, "numprocs", Integer.class);
+                String process_name = ini.get(sectionName, "process_name", String.class);
                 String user = ini.get(sectionName, "user", String.class);
 
-                ProcessHandle processHandle = new ProcessHandle(command, numprocs, autostart);
+                if(directory == null) directory = "";
+                if(numprocs == null) numprocs = 1;
+                ProcessHandle processHandle = new ProcessHandle(command, directory, numprocs, autostart);
                 processHandleList.add(processHandle);
             }
         } else {

@@ -39,6 +39,7 @@ fn_stop() {
 }
 
 fn_status() {
+  sleep 1
   export pid=$(fn_pid)
   if [ -n "${pid}" ]
     then echo "${T_NAME} is running with pid: ${pid}"

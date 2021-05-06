@@ -14,45 +14,43 @@ public class ProcessHandle {
     @Getter
     private String command = null;
     @Getter
+    private String directory = null;
+    @Getter
     private Integer count = 0;
     @Getter
     private Boolean autoRestart = false;
 
     private Map<Integer, ProcessState> processStateMap;
-
-    static private ICommandExecuteHelper executeHelper = null;
-
+    static private ICommandExecuteHelper iCommandExecuteHelper = null;
     static {
         String osName = System.getProperty("os.name");
         if (osName.startsWith("Windows")) {
-            executeHelper = new WindowsCommandExecuteHelper();
+            iCommandExecuteHelper = new WindowsCommandExecuteHelper();
         } else {
-            executeHelper = new ShellCommandExecuteHelper();
+            iCommandExecuteHelper = new ShellCommandExecuteHelper();
         }
     }
-
-
     public ProcessHandle() {
         processStateMap = new HashMap<>();
     }
-
-    public ProcessHandle(String command, Integer count, Boolean autoRestart) {
+    public ProcessHandle(String command, String directory, Integer count, Boolean autoRestart) {
         processStateMap = new HashMap<>();
         this.command = command;
+        this.directory = directory;
         this.count = count;
         this.autoRestart = autoRestart;
     }
 
     public Boolean start() {
         processStateMap.clear();
-        List<Integer> procList = executeHelper.getPidList(command);
+        List<Integer> procList = iCommandExecuteHelper.getPidList(command);
         Integer addCount = count - procList.size();
         for (Integer pid : procList) {
             processStateMap.put(pid, ProcessState.Running);
         }
         for (int i = 0; i < addCount; i++) {
-            System.out.println("> " + command);
-            Integer pid = executeHelper.exec(command);
+            System.out.println("start> " + command);
+            Integer pid = iCommandExecuteHelper.exec(command, directory);
             if (pid > 0) {
                 processStateMap.put(pid, ProcessState.Running);
             }
@@ -64,9 +62,8 @@ public class ProcessHandle {
 
         for (Integer pid : processStateMap.keySet()) {
             ProcessState state = processStateMap.get(pid);
-
             if (state == ProcessState.Running) {
-                executeHelper.kill(pid);
+                iCommandExecuteHelper.kill(pid);
                 processStateMap.replace(pid, ProcessState.Stoped);
             }
         }
@@ -74,22 +71,17 @@ public class ProcessHandle {
 
     public Boolean stop(Integer pid) {
         Boolean result = false;
-
         ProcessState state = null;
-
         if (pid != null && pid > 0) {
             state = processStateMap.get(pid);
         }
-
         if (state != null && state == ProcessState.Running) {
-            executeHelper.kill(pid);
+            iCommandExecuteHelper.kill(pid);
             processStateMap.replace(pid, ProcessState.Stoped);
             result = true;
         }
-
         return result;
     }
-
 
     public Boolean restart() {
         stop();
@@ -98,21 +90,17 @@ public class ProcessHandle {
 
     public Boolean restart(Integer pid) {
         Boolean result = false;
-
         ProcessState state = null;
-
         if (pid != null && pid > 0) {
             state = processStateMap.get(pid);
         }
-
         if (state != null && state == ProcessState.Running) {
-            executeHelper.kill(pid);
+            iCommandExecuteHelper.kill(pid);
             processStateMap.replace(pid, state, ProcessState.Stoped);
         }
-
         if (state == null || (state != ProcessState.Starting && state != ProcessState.Running)) {
-            Integer newPid = executeHelper.exec(command);
-
+            System.out.println("restart> " + command);
+            Integer newPid = iCommandExecuteHelper.exec(command, directory);
             if (newPid > 0) {
                 if (pid != null) {
                     processStateMap.remove(pid);
@@ -121,7 +109,6 @@ public class ProcessHandle {
                 result = true;
             }
         }
-
         return result;
     }
 
@@ -138,35 +125,32 @@ public class ProcessHandle {
     }
 
     public void updateProcessState() {
-
-        List<Integer> procList = executeHelper.getPidList(command);
+        List<Integer> procList = iCommandExecuteHelper.getPidList(command);
         List<Integer> fatalProcList = new ArrayList<>();
-
-        for (Integer pid : processStateMap.keySet()) {
-            ProcessState state = processStateMap.get(pid);
-
-            if (procList.contains(pid)) {
-                if (state != ProcessState.Running) {
-                    processStateMap.replace(pid, ProcessState.Running);
+        if(processStateMap.size() > 0) {
+            for (Integer pid : processStateMap.keySet()) {
+                ProcessState state = processStateMap.get(pid);
+                if (procList.contains(pid)) {
+                    if (state != ProcessState.Running) {
+                        processStateMap.replace(pid, ProcessState.Running);
+                    }
+                } else {
+                    processStateMap.replace(pid, ProcessState.Fatal);
+                    fatalProcList.add(pid);
                 }
-            } else {
-                processStateMap.replace(pid, ProcessState.Fatal);
-                fatalProcList.add(pid);
             }
-
+        } else {
+            fatalProcList.add(-1);
         }
-
-
         if (autoRestart && fatalProcList.size() > 0) {
             for (Integer pid : fatalProcList) {
-                System.out.println("> " + command);
-                Integer newPid = executeHelper.exec(command);
+                System.out.println("autoRestart> " + command);
+                Integer newPid = iCommandExecuteHelper.exec(command, directory);
                 if (newPid > 0) {
                     processStateMap.remove(pid);
                     processStateMap.put(newPid, ProcessState.Running);
                 }
             }
         }
-
     }
 }

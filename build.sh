@@ -1,2 +1,3 @@
+gradle clean
 rm -rf out build
-gradle clean build -x test -Dfile.encoding=UTF-8
+gradle build -x test -Dfile.encoding=UTF-8
