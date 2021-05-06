@@ -4,6 +4,8 @@ import com.spring.core.ICommandExecuteHelper;
 import com.spring.core.ShellCommandExecuteHelper;
 import com.spring.core.WindowsCommandExecuteHelper;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 public class ProcessHandle {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Getter
     private String command = null;
     @Getter
@@ -50,6 +55,7 @@ public class ProcessHandle {
         }
         for (int i = 0; i < addCount; i++) {
             System.out.println("start> " + command);
+            logger.info("start> " + command);
             Integer pid = iCommandExecuteHelper.exec(command, directory);
             if (pid > 0) {
                 processStateMap.put(pid, ProcessState.Running);
@@ -100,6 +106,7 @@ public class ProcessHandle {
         }
         if (state == null || (state != ProcessState.Starting && state != ProcessState.Running)) {
             System.out.println("restart> " + command);
+            logger.info("restart> " + command);
             Integer newPid = iCommandExecuteHelper.exec(command, directory);
             if (newPid > 0) {
                 if (pid != null) {
@@ -145,6 +152,7 @@ public class ProcessHandle {
         if (autoRestart && fatalProcList.size() > 0) {
             for (Integer pid : fatalProcList) {
                 System.out.println("autoRestart> " + command);
+                logger.info("autoRestart> " + command);
                 Integer newPid = iCommandExecuteHelper.exec(command, directory);
                 if (newPid > 0) {
                     processStateMap.remove(pid);
